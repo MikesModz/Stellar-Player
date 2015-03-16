@@ -18,6 +18,8 @@ on a simular implentation on the PIC32 by Serveur Perso.
 - User selectable next file.
 - Basic module information. Number of patterns, channels etc.
 
+[StellarPlayer with TFT display](https://www.youtube.com/watch?v=9vW0ljh3YDw)
+
 ## Useage
 
 Assumes StellarisWare Driverlib is installed in the folder "C:\StellarisWare\".
