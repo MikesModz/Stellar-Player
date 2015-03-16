@@ -21,7 +21,6 @@
 #include ".\tft\tft.h"
 #include <string.h>
 #include <stdio.h>
-#include "extbuttons.h"
 
 unsigned long g_ulFlags;
 unsigned long g_ulTest;
