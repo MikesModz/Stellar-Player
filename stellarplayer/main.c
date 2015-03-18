@@ -21,15 +21,7 @@
 #include ".\tft\tft.h"
 #include <string.h>
 #include <stdio.h>
-
-unsigned long g_ulFlags;
-unsigned long g_ulTest;
-
-volatile short encoderPosition = 0;
-volatile char encoderSubPosition = 0;
-
-volatile char uButton = 0;
-volatile char uButtonPrev = 0;
+#include "inc/hw_gpio.h"
 
 uint16_t totalFiles = 0;
 uint16_t last = MAX_DISPLAY_ITEMS;
@@ -37,11 +29,9 @@ uint16_t current = 0;
 
 int main() {
 	WORD i = 0;
-	BYTE mode = 0;
-	BYTE oldEncoderBtn = 0;
-	BYTE encoderSubPositionReset = 0;
 	unsigned long ulPeriod;
-	//unsigned int counter = 0;
+	unsigned long ulButtons;
+
 	//
 	// Enable lazy stacking for interrupt handlers.  This allows floating-point
 	// instructions to be used within interrupt handlers, but at the expense of
@@ -123,7 +113,7 @@ int main() {
 	GPIOPinConfigure(GPIO_PB1_T2CCP1);
 	GPIOPinTypeTimer(GPIO_PORTB_BASE, GPIO_PIN_1);
 
-	//right stereo channel
+	// Right stereo channel
 	GPIOPinConfigure(GPIO_PB0_T2CCP0);
 	GPIOPinTypeTimer(GPIO_PORTB_BASE, GPIO_PIN_0);
 
@@ -149,11 +139,26 @@ int main() {
 
 	TimerEnable(TIMER3_BASE, TIMER_A);
 
+	// Enable the GPIO port to which the pushbuttons are connected.
 	//
-	// Initialize the buttons
+	ROM_SysCtlPeripheralEnable(BUTTONS_GPIO_PERIPH);
+	//ROM_SysCtlPeripheralEnable(EXT_BUTTONS_GPIO_PERIPH);
+
 	//
-	ButtonsInit();
-	//ExtButtonsInit();
+	// Unlock PF0 so we can change it to a GPIO input
+	// Once we have enabled (unlocked) the commit register then re-lock it
+	// to prevent further changes.  PF0 is muxed with NMI thus a special case.
+	//
+	HWREG(BUTTONS_GPIO_BASE + GPIO_O_LOCK) = GPIO_LOCK_KEY_DD;
+	HWREG(BUTTONS_GPIO_BASE + GPIO_O_CR) |= 0x01;
+	HWREG(BUTTONS_GPIO_BASE + GPIO_O_LOCK) = 0;
+
+	//
+	// Set each of the button GPIO pins as an input with a pull-up.
+	//
+	ROM_GPIODirModeSet(BUTTONS_GPIO_BASE, ALL_BUTTONS, GPIO_DIR_MODE_IN);
+	ROM_GPIOPadConfigSet(BUTTONS_GPIO_BASE, ALL_BUTTONS,
+						 GPIO_STRENGTH_2MA, GPIO_PIN_TYPE_STD_WPU);
 
 	// Initialize the SysTick interrupt to process colors and buttons.
 	//
@@ -186,15 +191,12 @@ int main() {
 	f_chdir(PATH);
 	f_opendir(&dir, ".");
 
-	//LoadBitmapFileTFT("player.bmp",0,40);
-	//SysCtlDelay(35000000);
-	//fill_screen_tft(Color565(0,0,0));
-
 	// Read the SD card and populate the file list
 	totalFiles = loadFileList();
 
 	// If some files were found display the list
-	if (totalFiles > 0) {
+	if (totalFiles > 0)
+	{
 		// Show the file list
 		UpdateFileListBox(current, last);
 
@@ -202,53 +204,28 @@ int main() {
 		loadFile(current);
 	}
 
-	//loadNextFile();
 	ROM_IntMasterEnable ();
 
 	for (;;) {
 		while ((SoundBuffer.writePos + 1 & SOUNDBUFFERSIZE - 1)
 				!= SoundBuffer.readPos) {
 			if (!i) {
-				if (uButton != uButtonPrev) {
-					uButtonPrev = uButton;
-					if (!mode) {
-						if (uButton & LEFT_BUTTON) {
-							//ROM_IntMasterDisable();
-							//UARTprintf("Load previous module\n");
-							//ROM_IntMasterEnable();
-							//loadPreviousFile();
-							//decrementMenu(&current,&last);
-							//loadFile(current);
-						}
 
-						if (uButton & RIGHT_BUTTON) {
-							//ROM_IntMasterDisable();
-							//UARTprintf("Load Next module\n");
-							//ROM_IntMasterEnable();
-							//loadNextFile();
+				ulButtons = (ROM_GPIOPinRead(BUTTONS_GPIO_BASE, ALL_BUTTONS));
+
+				if ( ( ulButtons & LEFT_BUTTON ) == 0 ) {
+					decrementMenu(&current,&last);
+					loadFile(current);
+				}
+
+				if ( ( ulButtons & RIGHT_BUTTON ) == 0 ) {
 							incrementMenu(&current, &last, totalFiles);
 							loadFile(current);
 						}
-					}
-				} else {
-					encoderSubPositionReset++;
-					if (encoderSubPositionReset == 100) {
-						encoderSubPosition = 0;
-						encoderSubPositionReset = 0;
-					}
-				}
-
-				if (ENCODERBTNPIN && !oldEncoderBtn) {
-					if (++mode == 3) {
-						mode = 0;
-					}
-				}
-				oldEncoderBtn = ENCODERBTNPIN;
 
 				player();
 				i = getSamplesPerTick();
 			}
-
 			mixer();
 			i--;
 		}
@@ -266,11 +243,6 @@ void Timer3IntHandler(void) {
 	// Clear the timer interrupt.
 	//
 	ROM_TimerIntClear (TIMER3_BASE, TIMER_TIMA_TIMEOUT);
-
-	//
-	// Toggle the flag for the first timer.
-	//
-	HWREGBITW(&g_ulFlags, 0) ^= 1;
 
 	if (SoundBuffer.writePos != SoundBuffer.readPos) {
 		//Sound output
@@ -292,28 +264,6 @@ void Timer3IntHandler(void) {
 	}
 }
 
-void AppButtonHandler(unsigned long ulButtons) {
-	switch (ulButtons & ALL_BUTTONS) {
-	case LEFT_BUTTON:
-		uButton = LEFT_BUTTON;
-		break;
-	case RIGHT_BUTTON:
-		uButton = RIGHT_BUTTON;
-		break;
-	case ALL_BUTTONS:
-		uButton = ALL_BUTTONS;
-		break;
-	default:
-		uButton = 0;
-		break;
-	}
-}
-
 void SysTickIntHandler(void) {
-	unsigned long ulButtons;
-	//unsigned long ulExtButtons;
 
-	ulButtons = ButtonsPoll(0, 0);
-	//ulExtButtons = ExtButtonsPoll();
-	AppButtonHandler(ulButtons);
 }
