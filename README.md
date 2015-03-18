@@ -16,7 +16,7 @@ Which in turn was based on a similar implementation on the PIC32 by Serveur Pers
 - 128 x 160 SPI TFT module.
 - Displays list of .mod and .s3m files found on SD card.
 - Next and previous modules can be selected.
-- Shows song length, number channels and patterns.
+- Shows current row, current pattern and total patterns while playing.
 
 [StellarPlayer with TFT display](https://www.youtube.com/watch?v=9vW0ljh3YDw)
 
