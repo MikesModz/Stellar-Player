@@ -100,17 +100,17 @@ void UpdateFileListBox(uint16_t current, uint16_t last)
 	uint16_t line=0;
 	uint8_t tempBuffer[13];
 
-	CenterTextTFT("Select a file",10,Color565(255,0,0),Color565(0,0,0));
+	CenterTextTFT("Select a file",10,Color565(255,0,0),Color565(0,0,0),1);
 	for(i=last-MAX_DISPLAY_ITEMS;i<last;i++)
 	{
 		getModFileNameNew(tempBuffer,i);
 		if(i==current)
 		{
-			CenterTextTFT((char*)tempBuffer,(line*10)+30,Color565(255,0,0),Color565(0,0,255));
+			CenterTextTFT((char*)tempBuffer,(line*10)+30,Color565(255,0,0),Color565(0,0,255),1);
 		}
 		else
 		{
-			CenterTextTFT((char*)tempBuffer,(line*10)+30,Color565(255,255,255),Color565(0,0,0));
+			CenterTextTFT((char*)tempBuffer,(line*10)+30,Color565(255,255,255),Color565(0,0,0),1);
 		}
 		line++;
 	}
@@ -338,7 +338,7 @@ void ShowDemoTFT(void)
 	my_delay_tft(2000);
 }
 
-void CenterTextTFT(char *string, UINT y_pos, USHORT f_col, USHORT b_col)
+void CenterTextTFT(char *string, UINT y_pos, USHORT f_col, USHORT b_col, UCHAR fill)
 {
 	UINT w = 0;
 
@@ -346,7 +346,7 @@ void CenterTextTFT(char *string, UINT y_pos, USHORT f_col, USHORT b_col)
 	w = strlen(string)*6;
 	if(w<=_width)
 	{
-		fill_rect_tft(0,y_pos,_width,8,b_col);
+		if( fill ) fill_rect_tft(0,y_pos,_width,8,b_col);
 		set_cursor_tft((_width-w)/2,y_pos);
 		set_text_wrap_tft(0);
 		set_text_color_tft(f_col,b_col);

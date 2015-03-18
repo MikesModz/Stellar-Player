@@ -362,7 +362,7 @@ static void processRow()
 				uPlayer.Mod_player.orderIndex++;
 				if(uPlayer.Mod_player.orderIndex >= uMod.Mod.songLength)
 					uPlayer.Mod_player.orderIndex = 0;
-			}
+				}
 			breakFlag = true;
 			break;
 
@@ -573,6 +573,7 @@ static void processTick()
 
 void mod_player()
 {
+	uint8_t buffer[20];
 	if(uPlayer.Mod_player.tick == uPlayer.Mod_player.speed) {
 		uPlayer.Mod_player.tick = 0;
 
@@ -596,6 +597,9 @@ void mod_player()
 		processTick();
 	}
 	uPlayer.Mod_player.tick++;
+
+	sprintf((char*)buffer,"%02u/%02u/%02u", uPlayer.Mod_player.row,uPlayer.Mod_player.orderIndex,uMod.Mod.songLength);
+	CenterTextTFT((char*)buffer,140,Color565(0,0,255),Color565(0,0,0),0);
 }
 
 void mod_mixer()
@@ -688,7 +692,6 @@ void mod_mixer()
 void loadMod()
 {
 	uint8_t channel;
-	uint8_t buffer[20];
 
 	loadHeader();
 	loadSamples();
@@ -742,10 +745,8 @@ void loadMod()
 	SoundBuffer.readPos = 0;
 
 	fill_rect_tft(0,120,128,30,Color565(0,0,0));
-	CenterTextTFT("Now playing...",120,Color565(255,0,0),Color565(0,0,0));
-	CenterTextTFT((char*)uMod.Mod.name,130,Color565(0,255,0),Color565(0,0,0));
-	sprintf((char*)buffer,"%u/%u/%u", uMod.Mod.songLength,uMod.Mod.numberOfPatterns,uMod.Mod.numberOfChannels);
-	CenterTextTFT((char*)buffer,140,Color565(0,0,255),Color565(0,0,0));
+	CenterTextTFT("Now playing...",120,Color565(255,0,0),Color565(0,0,0),1);
+	CenterTextTFT((char*)uMod.Mod.name,130,Color565(0,255,0),Color565(0,0,0),1);
 }
 
 uint16_t mod_getSamplesPerTick()

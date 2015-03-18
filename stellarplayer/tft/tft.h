@@ -126,7 +126,7 @@ void set_addr_window_tft(UCHAR x0, UCHAR y0, UCHAR x1, UCHAR y1);
 void spi_stream_pixel_tft(USHORT colour);
 void draw_pixel_tft(SHORT x, SHORT y, USHORT color);
 void LoadBitmapFileTFT(UCHAR *bitmapFileName, UCHAR x, UCHAR y);
-void CenterTextTFT(char *string, UINT y_pos, USHORT f_col, USHORT b_col);
+void CenterTextTFT(char *string, UINT y_pos, USHORT f_col, USHORT b_col, UCHAR fill);
 void UpdateFileListBox(uint16_t current, uint16_t last);
 void incrementMenu(uint16_t *current, uint16_t *last, uint16_t totalFiles);
 void decrementMenu(uint16_t *current, uint16_t *last);
