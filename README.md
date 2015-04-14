@@ -22,7 +22,7 @@ Which in turn was based on a similar implementation on the PIC32 by Serveur Pers
 
 ##Launch Pad Connections
 
-TFT             | Launch Pad
+Connections     | Launch Pad
 :----------------|:-----------
 | TFT_RESET     | PA7 |
 | TFT_COMMAND   | PA6 |
