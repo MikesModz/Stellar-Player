@@ -1,4 +1,4 @@
-# StellarPlayer
+# Stellar-Player
 
 A MOD & S3M Player for the Texas Instruments Stellaris® LM4F120 launch pad evaluation kit.
 
